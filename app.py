@@ -137,17 +137,22 @@ with tab1:
     st.divider()
     st.subheader("Financials (USD)")
 
+    # compute USD values defensively — works whether core.py has _usd keys or not
+    _rate = d.get("usd_rate", 1.0)
+    def _usd(key):
+        return d.get(f"{key}_usd") or (d[key] * _rate if d.get(key) else None)
+
     f1, f2, f3, f4 = st.columns(4)
-    f1.metric("Revenue", fmt_large(d["revenue_usd"]))
-    f2.metric("Gross Profit", fmt_large(d["gross_profit_usd"]))
-    f3.metric("Net Income", fmt_large(d["net_income_usd"]))
-    f4.metric("Free Cash Flow", fmt_large(d["fcf_usd"]))
+    f1.metric("Revenue", fmt_large(_usd("revenue")))
+    f2.metric("Gross Profit", fmt_large(_usd("gross_profit")))
+    f3.metric("Net Income", fmt_large(_usd("net_income")))
+    f4.metric("Free Cash Flow", fmt_large(_usd("fcf")))
 
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Gross Margin", fmt_pct(d["gross_margin"]))
     m2.metric("Operating Margin", fmt_pct(d["op_margin"]))
     m3.metric("Net Margin", fmt_pct(d["net_margin"]))
-    m4.metric("EBITDA", fmt_large(d["ebitda_usd"]))
+    m4.metric("EBITDA", fmt_large(_usd("ebitda")))
 
     g1, g2 = st.columns(2)
     g1.metric("Revenue Growth YoY", fmt_pct(d["rev_growth"]))
