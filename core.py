@@ -23,6 +23,16 @@ def currency_symbol(code):
     return _CURRENCY_SYMBOLS.get(code, f"{code} ") if code else "$"
 
 
+def get_usd_rate(currency: str) -> float:
+    if not currency or currency == "USD":
+        return 1.0
+    try:
+        rate = yf.Ticker(f"{currency}USD=X").fast_info["last_price"]
+        return float(rate) if rate else 1.0
+    except Exception:
+        return 1.0
+
+
 # ── Country / Geopolitical Risk Data ─────────────────────────────────────────
 
 COUNTRY_RISKS = {
@@ -534,6 +544,7 @@ def fetch_stock_data(symbol: str) -> dict:
     trade_symbol = currency_symbol(trade_currency)
     is_foreign = country not in ("United States", "")
     fin_is_local = fin_currency != "USD"
+    usd_rate = get_usd_rate(fin_currency)
 
     mktcap = safe(info, "marketCap")
     volume = safe(info, "volume")
@@ -569,6 +580,16 @@ def fetch_stock_data(symbol: str) -> dict:
     quick = safe(info, "quickRatio")
     roe = safe(info, "returnOnEquity")
     roa = safe(info, "returnOnAssets")
+
+    # USD-converted financials (for web app display)
+    def to_usd(val):
+        return val * usd_rate if val is not None else None
+
+    revenue_usd = to_usd(revenue)
+    gross_profit_usd = to_usd(gross_profit)
+    ebitda_usd = to_usd(ebitda)
+    net_income_usd = to_usd(net_income)
+    fcf_usd = to_usd(fcf)
 
     div_yield = safe(info, "dividendYield")
     div_yield_frac = (div_yield / 100) if div_yield else None
@@ -643,11 +664,17 @@ def fetch_stock_data(symbol: str) -> dict:
         "peg": peg,
         "eps": eps,
         "feps": feps,
+        "usd_rate": usd_rate,
         "revenue": revenue,
         "gross_profit": gross_profit,
         "ebitda": ebitda,
         "net_income": net_income,
         "fcf": fcf,
+        "revenue_usd": revenue_usd,
+        "gross_profit_usd": gross_profit_usd,
+        "ebitda_usd": ebitda_usd,
+        "net_income_usd": net_income_usd,
+        "fcf_usd": fcf_usd,
         "gross_margin": gross_margin,
         "op_margin": op_margin,
         "net_margin": net_margin,
