@@ -107,7 +107,8 @@ h4.metric("52W Range", f"${d['low52']:,.0f} – ${d['high52']:,.0f}" if d["low52
 h5.metric("Beta", f"{d['beta']:.2f}" if d["beta"] else "N/A")
 
 if d["is_foreign"] and d["fin_is_local"]:
-    st.info(f"💱  Financials converted from **{d['fin_currency']}** to USD (rate: 1 {d['fin_currency']} = ${d['usd_rate']:.4f}). Ratios and margins are unaffected.")
+    usd_rate = d.get("usd_rate", 1.0)
+    st.info(f"💱  Financials converted from **{d['fin_currency']}** to USD (rate: 1 {d['fin_currency']} = ${usd_rate:.4f}). Ratios and margins are unaffected.")
 
 st.divider()
 
